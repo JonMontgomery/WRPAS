@@ -8,20 +8,12 @@ import exceptions
 import ttk
 import Tkinter as Tk
 from Tkinter import *
-from numpy import arange, sin, pi
-import matplotlib.animation as animation
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.backend_bases import key_press_handler
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
 from ScrolledText import ScrolledText
 from multiprocessing import Process
 from datetime import datetime
 import socket
 import tkFileDialog
 import os
-import pandas as pd
-import numpy as np
 import random
 import re
 import subprocess
@@ -33,9 +25,6 @@ printFlag = 0
 graphFlag = 0
 stopFlag = 0
 
-
-fig = plt.figure()
-ax1 = fig.add_subplot(1, 1, 1)
 
 # row indexes of values in log file
 numCols = 0
@@ -167,6 +156,8 @@ def onselect(evt):
 
 def startTransmission():
 
+    global path
+    global filename
     global stopFlag
     stopFlag = 0
 
@@ -178,7 +169,6 @@ def startTransmission():
         TCP_IP = ipentry.get()
         TCP_PORT = 3602
     
-
     logData = []
     begin = time.time()
     timeout = 2
@@ -186,15 +176,26 @@ def startTransmission():
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+
+    
     csvout = logFile.get()
 
     if csvout == '':
         udpData("Error: Specify Log File Name")
     else:
         csvout = logFile.get()
+    
 
 
-    path = 'C:/Users/aeros/Desktop/WRPAS-Logs/'
+    #filename = tkFileDialog.asksaveasfile(mode='w', defaultextension=".txt")
+    #pathlabel.config(text=filename)
+
+    try:
+        path
+    except NameError:
+        udpData("Error : Specify Log Save Location")
+
+
 
     pathWrite = os.path.join(path, csvout)
     f = open(pathWrite, "a")
@@ -336,7 +337,7 @@ def sendTCP():
   timeout = 2
   newData = []
   logData = []
-  TCP_IP = ipentry.get() #user entry
+  #TCP_IP = ipentry.get() #user entry
   TCP_PORT = 3602 # user entry
   BUFFER_SIZE = 16000
   MESSAGE = commandentry.get() + '\r' #sends command entered by user
@@ -532,11 +533,23 @@ def openData():
     return data
 
 def openLog():
-    os.system(r"notepad.exe " + "C:\\Users\\aeros\\Desktop\\wifisetup.txt")
 
-def clearLog():
-    open("C:\\Users\\aeros\\Desktop\\WRPAS-Logs\\outputTest.txt", 'w').close()
+    textfile = open("wifisetup.txt", "w")
+    textfile.write("AT+S.SSIDTXT=NETGEAR71\n")
+    textfile.write("AT+S.SCFG=wifi_wpa_psk_text,smoothspider\n")
+    textfile.write("AT+S.SCFG=wifi_priv_mode,2\n")
+    textfile.write("AT+S.SCFG=wifi_mode,1\n")
+    textfile.write("AT&W\n")
+    textfile.write("AT+CFUN=1\n")
+    textfile.close()
 
+    os.system(r"notepad.exe " + "wifisetup.txt")
+
+
+def getLog():
+    global path
+    path = tkFileDialog.askdirectory()
+        
 
 def dataCalc():
  
@@ -842,7 +855,7 @@ if __name__ == "__main__":
 
 
     #text1 = Text(width = 60, height = 5)
-    text1 = ScrolledText(width = 180, height = 23)
+    text1 = ScrolledText(width = 220, height = 28)
     text1.config(font=("Courier", 10))
     text1.place(x = 5, y = 520)
 
@@ -856,8 +869,8 @@ if __name__ == "__main__":
     getData = Button(text = "COLLECT DATA", command = startTransmission, font = 128, fg = "green")
     getData.place(x = 700, y = 100)
 
-    teraTerm = Button(text = "CONNECT IN TERATERM", command = _openFile, font = 128)
-    teraTerm.place(x = 700, y = 200)
+    #teraTerm = Button(text = "CONNECT IN TERATERM", command = _openFile, font = 128)
+    #teraTerm.place(x = 700, y = 200)
 
     closeConn = Button(text = "DISCONNECT", command = tcpDisconnect, font = 128, fg = "red")
     closeConn.place(x = 700, y = 300)
@@ -890,6 +903,7 @@ if __name__ == "__main__":
     passLabel.place(x = 30, y = 150)
     """
 
+    """
     step1 = Label(text = "1. Set Connection Parameters through WiFi Params file").place(x = 1100, y = 50)
     step11 = Label(text = "2. Click Set WiFi Params and through the Serial Port enter DOWIFITEST=1").place(x = 1100, y = 100)
     step23 = Label(text = "3. Send WiFi Params File through TeraTerm and a connection should establish").place(x = 1100, y = 150)
@@ -897,6 +911,7 @@ if __name__ == "__main__":
     step3 = Label(text = "5. Enable Continious Data on WRPAS under WiFi Menu & Enable Socket Host").place(x = 1100, y = 250)
     step4 = Label(text = "6. Get TCP IP from output of connection status on TeraTerm").place(x = 1100, y = 300)
     step5 = Label(text = "7. Begin Collecting Data").place(x = 1100, y = 350)
+    """
 
     """
     conn1 = Label(text = "AT+S.SSIDTXT=[SSID]").place(x = 50, y = 150)
@@ -924,6 +939,9 @@ if __name__ == "__main__":
     ipentry.place(x = 850, y = 450)
 
     logFileName = Label(text = "Log File Name", font = 64).place(x = 700, y = 350)
+
+    logFileName2 = Button(text = "Choose Log File Location", command = getLog, font = 64).place(x = 700, y = 200)
+
     logExample = Label(text = "Example (WiFiData.txt)", font = 64).place(x = 700, y = 390)
     ipName = Label(text = "TCP IP", font = 64).place(x = 700, y = 450)
 
