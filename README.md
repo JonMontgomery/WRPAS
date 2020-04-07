@@ -1,3 +1,3 @@
 # WRPAS
 
-WiFi Interface for Wearable Respiratior Protection Assessment System (used by the military)
+WiFi Interface for Wearable Respiratior Protection Assessment System in field or combat
